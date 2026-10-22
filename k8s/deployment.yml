@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +17,8 @@ spec:
         app: todo
     spec:
       containers:
-      - name: todo
-        image: faizan44/todo-app
-        ports:
-        - containerPort: 5000
+        - name: todo
+          image: IMAGE_PLACEHOLDER
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
