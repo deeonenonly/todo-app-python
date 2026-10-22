@@ -1,48 +1,50 @@
+
 pipeline {
     agent any
 
     stages {
-        
-        
         stage('Code') {
             steps {
-                git url: "https://github.com/faizan35/todo-app-python", branch: "main"
-                echo 'Code has beed cloned...'
+                git url: 'https://github.com/faizan35/todo-app-python.git',
+                    branch: 'main'
+                echo 'Source code checked out.'
             }
         }
 
         stage('Build') {
             steps {
-                sh "docker build -t todo-app ."
-                echo 'Building Docker image Completed.'
+                sh 'docker build -t todo-app .'
+                echo 'Docker image built successfully.'
             }
         }
 
-        stage('Scan') {
+        stage('Validate') {
             steps {
-                echo 'Scanning Done.'
+                sh 'docker image inspect todo-app >/dev/null'
+                echo 'Docker image validation passed.'
             }
         }
 
         stage('Push') {
             steps {
-                
-                withCredentials([usernamePassword(credentialsId:"dockerHub", passwordVariable:"dockerHubPass", usernameVariable:"dockerHubUser")]){
-                   sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                   sh "docker tag todo-app ${env.dockerHubUser}/todo-app:latest"
-                   sh "docker push ${env.dockerHubUser}/todo-app:latest"
-                   echo 'Pushed to DockerHub.' 
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerHub',
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_PASS'
+                    )
+                ]) {
+                    sh '''
+                        set +x
+                        echo "$DOCKERHUB_PASS" |
+                          docker login -u "$DOCKERHUB_USER" --password-stdin
+                        docker tag todo-app "$DOCKERHUB_USER/todo-app:latest"
+                        docker push "$DOCKERHUB_USER/todo-app:latest"
+                        docker logout
+                    '''
                 }
-                
+                echo 'Image pushed to Docker Hub.'
             }
         }
-
-        stage('Deploy') {
-            steps {
-                sh "docker-compose down && docker-compose up -d"
-                echo 'Deployed Done.'
-            }
-        }
-
     }
 }
