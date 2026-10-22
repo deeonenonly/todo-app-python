@@ -5,9 +5,7 @@ pipeline {
     stages {
         stage('Code') {
             steps {
-                git url: 'https://github.com/faizan35/todo-app-python.git',
-                    branch: 'main'
-                echo 'Source code checked out.'
+                echo 'Source code checked out from the configured SCM.'
             }
         }
 
